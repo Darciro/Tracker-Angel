@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "192418233950",
+    "firebase_url": "https://tracker-angel.firebaseio.com",
+    "project_id": "tracker-angel",
+    "storage_bucket": "tracker-angel.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:192418233950:android:c77826531901fbcc",
+        "android_client_info": {
+          "package_name": "br.com.galdar.trackerangel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "192418233950-r64cb36jc2o4vrvuqbc228u1a7e8vig9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.galdar.trackerangel",
+            "certificate_hash": "f688151cd64e0a9138a648164616bb6a98fc3ed2"
+          }
+        },
+        {
+          "client_id": "192418233950-cm8i3n8otnma07etok6p3mase4a7f85a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrIhP9Kv2utW661AcVYVYGAsU2-w3Y6hM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "192418233950-cm8i3n8otnma07etok6p3mase4a7f85a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
