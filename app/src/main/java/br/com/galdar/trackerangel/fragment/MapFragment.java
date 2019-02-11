@@ -1,12 +1,23 @@
 package br.com.galdar.trackerangel.fragment;
 
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -16,6 +27,11 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import br.com.galdar.trackerangel.R;
 
@@ -27,6 +43,9 @@ public class MapFragment extends Fragment {
     private MapView mapView;
     private GoogleMap map;
 
+    private Double mapLatitude;
+    private Double mapLongitude;
+
 
     public MapFragment() {
         // Required empty public constructor
@@ -37,6 +56,9 @@ public class MapFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_map, container, false);
+
+        // requestLocationUpdates();
+        getLoc();
 
         // Gets the MapView from the XML layout and creates it
         mapView = (MapView) view.findViewById(R.id.mapView);
@@ -51,36 +73,8 @@ public class MapFragment extends Fragment {
             }
         });
 
-        // Gets to GoogleMap from the MapView and does initialization stuff
-        /*map = mapView.getMap();
-        map = mapView.getMapAsync(this);
-        map.getUiSettings().setMyLocationButtonEnabled(false);
-        map.setMyLocationEnabled(true);
-
-        // Needs to call MapsInitializer before doing any CameraUpdateFactory calls
-        try {
-            MapsInitializer.initialize(this.getActivity());
-        } catch (GooglePlayServicesNotAvailableException e) {
-            e.printStackTrace();
-        }
-
-        // Updates the location and zoom of the MapView
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(43.1, -87.9), 10);
-        map.animateCamera(cameraUpdate);*/
-
         return view;
     }
-
-   /* @Override
-    public void onMapReady(GoogleMap map) {
-        // DO WHATEVER YOU WANT WITH GOOGLEMAP
-        map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        // map.setMyLocationEnabled(true);
-        map.setTrafficEnabled(true);
-        map.setIndoorEnabled(true);
-        map.setBuildingsEnabled(true);
-        map.getUiSettings().setZoomControlsEnabled(true);
-    }*/
 
     @Override public void onSaveInstanceState(Bundle outState)
     {
@@ -104,6 +98,100 @@ public class MapFragment extends Fragment {
     public void onLowMemory() {
         super.onLowMemory();
         mapView.onLowMemory();
+    }
+
+    public void getLoc () {
+        DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference();
+        dbReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot data : dataSnapshot.getChildren() ) {
+                    mapLatitude = (Double) data.child("latitude").getValue();
+                    mapLongitude = (Double) data.child("longitude").getValue();
+                    // Log.d("XXX", "mapLatitude: " + data.child("latitude").toString() );
+                    // Log.d("XXX", "mapLatitude: " + data.child("longitude").toString() );
+                    /*Log.d("XXX1", "Key: " + data.getKey().toString() );
+                    Log.d("XXX1", "Val: " + data.getValue().toString() );
+
+                    if( data.getKey().toString() == "latitude" ){
+                        Log.d("XXX2", data.getKey().toString() );
+                        Log.d("XXX2", data.getValue().toString() );
+                        mapLatitude = (Double) data.getValue();
+                    }
+
+                    if( data.getKey() == "longitude" ){
+                        Log.d("XXX3", data.getKey().toString() );
+                        Log.d("XXX3", data.getValue().toString() );
+                        mapLongitude = (Double) data.getValue();
+                    }*/
+                }
+
+                showLog();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void showLog() {
+        Log.d("XXX showLog", "mapLatitude: " + mapLatitude + ", mapLongitude: " + mapLongitude );
+
+        mapView.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                map = googleMap;
+
+                /*
+                LatLng sydney = new LatLng(-33.852, 151.211);
+                googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*/
+                LatLng l = new LatLng(mapLatitude, mapLongitude);
+                map.addMarker( new MarkerOptions().position(l).title("Marker in Sydney") );
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom( l, 10);
+                map.animateCamera(cameraUpdate);
+            }
+        });
+    }
+
+    //Initiate the request to track the device's location//
+    private void requestLocationUpdates() {
+        LocationRequest request = new LocationRequest();
+        //Specify how often your app should request the device’s location//
+        request.setInterval(10000);
+        //Get the most accurate location data available//
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient( getActivity().getApplicationContext() );
+        final String path = getString(R.string.firebase_path);
+        int permission = ContextCompat.checkSelfPermission( getActivity().getApplicationContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION);
+
+
+        Log.d( "xxx", "Connecting to database... " + path);
+
+        //If the app currently has access to the location permission...//
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            Log.d( "xxx", "requestLocationUpdates ok..." );
+            //...then request location updates//
+            client.requestLocationUpdates(request, new LocationCallback() {
+                @Override
+                public void onLocationResult(LocationResult locationResult) {
+                    //Get a reference to the database, so your app can perform read and write operations//
+                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference(path);
+                    Location location = locationResult.getLastLocation();
+                    Log.d( "xxx", "location: " + location );
+                    if (location != null) {
+                        //Save the location data to the database//
+                        ref.setValue(location);
+                        // ref.child("data").setValue(location);
+                    }
+                }
+            }, null);
+        } else {
+            Log.d( "xxx", "requestLocationUpdates error!!" );
+        }
     }
 
 }

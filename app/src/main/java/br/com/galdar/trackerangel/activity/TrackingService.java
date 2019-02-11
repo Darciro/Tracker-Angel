@@ -148,11 +148,11 @@ public class TrackingService extends Service {
                 Manifest.permission.ACCESS_FINE_LOCATION);
 
 
-        Log.d( "xxx", "Connecting to database... " + path);
+        // Log.d( "xxx", "Connecting to database... " + path);
 
         //If the app currently has access to the location permission...//
         if (permission == PackageManager.PERMISSION_GRANTED) {
-            Log.d( "xxx", "requestLocationUpdates ok..." );
+            // Log.d( "xxx", "requestLocationUpdates ok..." );
             //...then request location updates//
             client.requestLocationUpdates(request, new LocationCallback() {
                 @Override
@@ -160,7 +160,7 @@ public class TrackingService extends Service {
                     //Get a reference to the database, so your app can perform read and write operations//
                     DatabaseReference ref = FirebaseDatabase.getInstance().getReference(path);
                     Location location = locationResult.getLastLocation();
-                    Log.d( "xxx", "location: " + location );
+                    // Log.d( "xxx", "location: " + location );
                     if (location != null) {
                         //Save the location data to the database//
                         ref.setValue(location);
@@ -169,7 +169,7 @@ public class TrackingService extends Service {
                 }
             }, null);
         } else {
-            Log.d( "xxx", "requestLocationUpdates error!!" );
+            // Log.d( "xxx", "requestLocationUpdates error!!" );
         }
     }
 }
