@@ -26,6 +26,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -46,6 +47,8 @@ public class MapFragment extends Fragment {
     private Double mapLatitude;
     private Double mapLongitude;
 
+    // private final Marker addMarker;
+
 
     public MapFragment() {
         // Required empty public constructor
@@ -57,8 +60,8 @@ public class MapFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_map, container, false);
 
-        // requestLocationUpdates();
-        getLoc();
+        setLocationUpdates();
+        getLocationUpdates();
 
         // Gets the MapView from the XML layout and creates it
         mapView = (MapView) view.findViewById(R.id.mapView);
@@ -100,7 +103,7 @@ public class MapFragment extends Fragment {
         mapView.onLowMemory();
     }
 
-    public void getLoc () {
+    public void getLocationUpdates () {
         DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference();
         dbReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -108,22 +111,6 @@ public class MapFragment extends Fragment {
                 for (DataSnapshot data : dataSnapshot.getChildren() ) {
                     mapLatitude = (Double) data.child("latitude").getValue();
                     mapLongitude = (Double) data.child("longitude").getValue();
-                    // Log.d("XXX", "mapLatitude: " + data.child("latitude").toString() );
-                    // Log.d("XXX", "mapLatitude: " + data.child("longitude").toString() );
-                    /*Log.d("XXX1", "Key: " + data.getKey().toString() );
-                    Log.d("XXX1", "Val: " + data.getValue().toString() );
-
-                    if( data.getKey().toString() == "latitude" ){
-                        Log.d("XXX2", data.getKey().toString() );
-                        Log.d("XXX2", data.getValue().toString() );
-                        mapLatitude = (Double) data.getValue();
-                    }
-
-                    if( data.getKey() == "longitude" ){
-                        Log.d("XXX3", data.getKey().toString() );
-                        Log.d("XXX3", data.getValue().toString() );
-                        mapLongitude = (Double) data.getValue();
-                    }*/
                 }
 
                 showLog();
@@ -137,27 +124,27 @@ public class MapFragment extends Fragment {
     }
 
     public void showLog() {
-        Log.d("XXX showLog", "mapLatitude: " + mapLatitude + ", mapLongitude: " + mapLongitude );
+        // Log.d("XXX showLog", "mapLatitude: " + mapLatitude + ", mapLongitude: " + mapLongitude );
 
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
                 map = googleMap;
-
                 /*
                 LatLng sydney = new LatLng(-33.852, 151.211);
                 googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
                 googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*/
+                map.clear();
                 LatLng l = new LatLng(mapLatitude, mapLongitude);
-                map.addMarker( new MarkerOptions().position(l).title("Marker in Sydney") );
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom( l, 10);
-                map.animateCamera(cameraUpdate);
+                map.addMarker( new MarkerOptions().position(l).title("Guga está aqui") );
+                // CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom( l, 10);
+                /// map.animateCamera(cameraUpdate);
             }
         });
     }
 
     //Initiate the request to track the device's location//
-    private void requestLocationUpdates() {
+    private void setLocationUpdates() {
         LocationRequest request = new LocationRequest();
         //Specify how often your app should request the device’s location//
         request.setInterval(10000);
@@ -165,15 +152,13 @@ public class MapFragment extends Fragment {
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient( getActivity().getApplicationContext() );
         final String path = getString(R.string.firebase_path);
-        int permission = ContextCompat.checkSelfPermission( getActivity().getApplicationContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION);
+        int permission = ContextCompat.checkSelfPermission( getActivity().getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
 
-
-        Log.d( "xxx", "Connecting to database... " + path);
+        // Log.d( "xxx", "Connecting to database... " + path);
 
         //If the app currently has access to the location permission...//
         if (permission == PackageManager.PERMISSION_GRANTED) {
-            Log.d( "xxx", "requestLocationUpdates ok..." );
+            // Log.d( "xxx", "requestLocationUpdates ok..." );
             //...then request location updates//
             client.requestLocationUpdates(request, new LocationCallback() {
                 @Override
@@ -181,16 +166,16 @@ public class MapFragment extends Fragment {
                     //Get a reference to the database, so your app can perform read and write operations//
                     DatabaseReference ref = FirebaseDatabase.getInstance().getReference(path);
                     Location location = locationResult.getLastLocation();
-                    Log.d( "xxx", "location: " + location );
                     if (location != null) {
                         //Save the location data to the database//
                         ref.setValue(location);
+                        // Log.d( "xxx", "Setting location: " + location );
                         // ref.child("data").setValue(location);
                     }
                 }
             }, null);
         } else {
-            Log.d( "xxx", "requestLocationUpdates error!!" );
+            // Log.d( "xxx", "requestLocationUpdates error!!" );
         }
     }
 
